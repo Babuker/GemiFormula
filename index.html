@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaForm AI - Professional Optimizer</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>PharmaForm AI Optimizer</h1>
+        <p class="subtitle">Advanced Dosage Form Design & Strategy</p>
+
+        <section class="input-card">
+            <div class="form-group">
+                <label>Select Dosage Form:</label>
+                <select id="dosageForm">
+                    <option value="tablet">Tablet</option>
+                    <option value="capsule">Capsule</option>
+                    <option value="syrup">Syrup (Oral Liquid)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Active Ingredient (API):</label>
+                <select id="apiSelect">
+                    <option value="Paracetamol">Paracetamol</option>
+                    <option value="Ibuprofen">Ibuprofen</option>
+                    <option value="Metronidazole">Metronidazole</option>
+                    <option value="Diclofenac">Diclofenac Sodium</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Formulation Strategy:</label>
+                <select id="strategy">
+                    <option value="balanced">Balanced (Standard)</option>
+                    <option value="cost">Cost-Effective (Economy)</option>
+                    <option value="quality">High Quality (Premium)</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label>Batch Size (Units):</label>
+                <input type="number" id="batchSize" value="1000">
+            </div>
+
+            <button onclick="optimizeFormulation()" class="btn-primary">Generate Optimization</button>
+        </section>
+
+        <div id="resultsArea" style="display:none;">
+            <div class="results-grid">
+                <div class="chart-container">
+                    <h3>Ingredient Distribution</h3>
+                    <canvas id="formulaChart"></canvas>
+                </div>
+                
+                <div class="recommendations">
+                    <h3>Professional Recommendations</h3>
+                    <ul id="recList"></ul>
+                </div>
+            </div>
+
+            <div class="table-container">
+                <h3>Formulation Table (per Unit)</h3>
+                <table id="formulaTable">
+                    <thead>
+                        <tr>
+                            <th>Ingredient</th>
+                            <th>Role</th>
+                            <th>Amount (mg)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="formulaBody"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
