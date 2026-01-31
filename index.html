@@ -3,90 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PharmaForm AI - Professional Optimizer</title>
+    <title>PharmaForm AI Pro</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
     <div class="container">
-        <h1>PharmaForm AI Optimizer</h1>
-        <p class="subtitle">Advanced Dosage Form Design & Strategy</p>
+        <header>
+            <h1>PharmaForm AI <span class="badge">PRO</span></h1>
+            <p>Advanced Pharmaceutical Formulation & Logistics Optimizer</p>
+        </header>
 
-        <section class="input-card">
-            <div class="form-group">
-                <label>Select Dosage Form:</label>
-                <select id="dosageForm">
-                    <option value="tablet">Tablet</option>
-                    <option value="capsule">Capsule</option>
-                    <option value="syrup">Syrup (Oral Liquid)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Active Ingredient (API):</label>
-                <select id="apiSelect">
-                    <option value="Paracetamol">Paracetamol</option>
-                    <option value="Ibuprofen">Ibuprofen</option>
-                    <option value="Metronidazole">Metronidazole</option>
-                    <option value="Diclofenac">Diclofenac Sodium</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Formulation Strategy:</label>
-                <select id="strategy">
-                    <option value="balanced">Balanced (Standard)</option>
-                    <option value="cost">Cost-Effective (Economy)</option>
-                    <option value="quality">High Quality (Premium)</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label>Batch Size (Units):</label>
-                <input type="number" id="batchSize" value="1000">
-            </div>
-
-            <button onclick="optimizeFormulation()" class="btn-primary">Generate Optimization</button>
-        </section>
-
-        <div id="resultsArea" style="display:none;">
-            <div class="results-grid">
-                <div class="chart-container">
-                    <h3>Ingredient Distribution</h3>
-                    <canvas id="formulaChart"></canvas>
+        <main>
+            <section class="card input-section">
+                <div class="grid-inputs">
+                    <div class="field">
+                        <label>Target Dosage Form</label>
+                        <select id="dosageForm">
+                            <option value="tablet">Tablet</option>
+                            <option value="capsule">Capsule</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Active Ingredient (API)</label>
+                        <select id="apiSelect">
+                            <option value="Paracetamol">Paracetamol</option>
+                            <option value="Ibuprofen">Ibuprofen</option>
+                            <option value="Metronidazole">Metronidazole</option>
+                            <option value="Diclofenac">Diclofenac Sodium</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Strategy</label>
+                        <select id="strategy">
+                            <option value="balanced">Balanced Strategy</option>
+                            <option value="cost">Cost-Wise (Economy)</option>
+                            <option value="quality">Quality-Wise (Premium)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Batch Size (Units)</label>
+                        <input type="number" id="batchSize" value="10000" min="1">
+                    </div>
                 </div>
-                
-                <div class="recommendations">
-                    <h3>Professional Recommendations</h3>
-                    <ul id="recList"></ul>
-                </div>
-            </div>
+                <button onclick="calculateAll()" class="btn-main">Optimize & Generate Report</button>
+            </section>
 
-            <div class="table-container">
-                <h3>Formulation Table (per Unit)</h3>
-                <table id="formulaTable">
-                    <thead>
-                        <tr>
-                            <th>Ingredient</th>
-                            <th>Role</th>
-                            <th>Amount (mg)</th>
-                        </tr>
-                    </thead>
-                    <tbody id="formulaBody"></tbody>
-                </table>
+            <div id="resultsContent" style="display:none;">
+                <div class="grid-results">
+                    <div class="card chart-box">
+                        <h3>Formulation Breakdown</h3>
+                        <canvas id="formulaChart"></canvas>
+                    </div>
+                    <div class="card info-box">
+                        <h3>Manufacturing Recommendations</h3>
+                        <ul id="recList" class="rec-list"></ul>
+                    </div>
+                </div>
+
+                <div class="card table-box">
+                    <h3>Batch Logistics & Results</h3>
+                    <table id="logisticsTable">
+                        <tbody id="logisticsBody"></tbody>
+                    </table>
+                </div>
+
+                <button onclick="generatePDF()" class="btn-pdf">Download Professional PDF Report</button>
             </div>
-        </div>
+        </main>
     </div>
     <script src="script.js"></script>
-     <button onclick="downloadPDF()" class="btn-secondary" style="margin-top:10px; width:100%; display:none;" id="pdfBtn">Download PDF Report</button>
-
-<div id="batchLogistics" style="display:none; margin-top: 20px;" class="input-card">
-    <h3>Batch Production & Logistics</h3>
-    <table id="logisticsTable">
-        <tbody id="logisticsBody"></tbody>
-    </table>
-</div>
 </body>
-   </html>
+</html>
