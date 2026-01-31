@@ -1,98 +1,75 @@
-const apiDatabase = {
-    "Paracetamol": { dose: 500, solubility: "Medium", heatSensitive: false, moistureSensitive: false },
-    "Ibuprofen": { dose: 200, solubility: "Poor", heatSensitive: true, moistureSensitive: false },
-    "Metronidazole": { dose: 500, solubility: "Poor", heatSensitive: false, moistureSensitive: true },
-    "Diclofenac": { dose: 50, solubility: "Good", heatSensitive: false, moistureSensitive: true }
-};
-
-let formulaChart = null;
+// Prices per kg (Estimated USD)
+const pricing = { API: 120, Filler: 5, Binder: 15, Other: 25 };
 
 function optimizeFormulation() {
     const apiName = document.getElementById('apiSelect').value;
     const strategy = document.getElementById('strategy').value;
     const dosageForm = document.getElementById('dosageForm').value;
+    const batchSize = parseFloat(document.getElementById('batchSize').value);
     const apiData = apiDatabase[apiName];
 
-    // 1. Automatic Optimum Weight Calculation
-    let totalWeight = 0;
-    if (dosageForm === 'tablet' || dosageForm === 'capsule') {
-        // Rule: Excipients should be at least 20-30% of total weight
-        totalWeight = apiData.dose < 100 ? 150 : Math.ceil(apiData.dose * 1.3 / 10) * 10;
-    } else {
-        totalWeight = 5000; // Default 5ml for Syrup
-    }
-
-    // 2. Logic for Ingredient Ratios based on Strategy
-    let formula = calculateRatios(apiData.dose, totalWeight, strategy);
+    // 1. Optimum Weight Logic
+    let unitWeight = apiData.dose < 100 ? 150 : Math.ceil(apiData.dose * 1.3 / 10) * 10;
+    let formula = calculateRatios(apiData.dose, unitWeight, strategy);
     
-    // 3. Display Results
+    // 2. Batch Calculations
+    const totalMassKg = (unitWeight * batchSize) / 1000000;
+    const batchVolumeM3 = totalMassKg / 500; // Assuming avg bulk density 0.5 g/ml
+    const totalCost = ( (formula.api * pricing.API) + (formula.filler * pricing.Filler) + 
+                       (formula.binder * pricing.Binder) + (formula.other * pricing.Other) ) * batchSize / 1000000;
+
+    // 3. UI Updates
     document.getElementById('resultsArea').style.display = 'block';
+    document.getElementById('batchLogistics').style.display = 'block';
+    document.getElementById('pdfBtn').style.display = 'block';
+
     updateTable(apiName, formula);
     updateChart(formula);
-    generateRecommendations(apiName, apiData, dosageForm, strategy);
+    renderLogistics(totalMassKg, batchVolumeM3, totalCost, batchSize);
+    generateRecommendations(apiName, apiData, dosageForm, strategy, batchSize);
 }
 
-function calculateRatios(apiDose, total, strategy) {
-    const remaining = total - apiDose;
-    let ratios = {};
+function renderLogistics(mass, vol, cost, units) {
+    const body = document.getElementById('logisticsBody');
+    const storageSpace = (vol * 1.5).toFixed(3); // 50% extra for pallet gaps
+    const boxes = Math.ceil(units / 30); // 30 tablets per box standard
 
-    if (strategy === 'cost') {
-        ratios = { api: apiDose, filler: remaining * 0.8, binder: remaining * 0.1, other: remaining * 0.1 };
-    } else if (strategy === 'quality') {
-        ratios = { api: apiDose, filler: remaining * 0.6, binder: remaining * 0.25, other: remaining * 0.15 };
-    } else {
-        ratios = { api: apiDose, filler: remaining * 0.7, binder: remaining * 0.2, other: remaining * 0.1 };
-    }
-    return ratios;
-}
-
-function updateTable(apiName, formula) {
-    const body = document.getElementById('formulaBody');
     body.innerHTML = `
-        <tr><td>${apiName}</td><td>Active (API)</td><td>${formula.api.toFixed(1)}</td></tr>
-        <tr><td>Filler (Lactose/MCC)</td><td>Diluent</td><td>${formula.filler.toFixed(1)}</td></tr>
-        <tr><td>Binder (PVP/HPMC)</td><td>Cohesion</td><td>${formula.binder.toFixed(1)}</td></tr>
-        <tr><td>Other (Lubricant/Glidant)</td><td>Flow/Release</td><td>${formula.other.toFixed(1)}</td></tr>
+        <tr><td><b>Batch Total Mass:</b></td><td>${mass.toFixed(2)} kg</td></tr>
+        <tr><td><b>Batch Volume (m³):</b></td><td>${vol.toFixed(4)} m³</td></tr>
+        <tr><td><b>Estimated Formulation Cost:</b></td><td>$${cost.toFixed(2)}</td></tr>
+        <tr><td><b>Required Storage Floor Area:</b></td><td>~${storageSpace} m² (Single Stack)</td></tr>
+        <tr><td><b>Final Packaging Units:</b></td><td>${boxes} Boxes (30 units/box)</td></tr>
     `;
 }
 
-function updateChart(formula) {
-    const ctx = document.getElementById('formulaChart').getContext('2d');
-    if (formulaChart) formulaChart.destroy();
+async function downloadPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
     
-    formulaChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['API', 'Filler', 'Binder', 'Others'],
-            datasets: [{
-                data: [formula.api, formula.filler, formula.binder, formula.other],
-                backgroundColor: ['#3498db', '#95a5a6', '#f1c40f', '#e74c3c']
-            }]
-        }
+    doc.setFontSize(20);
+    doc.text("PharmaForm Optimization Report", 20, 20);
+    
+    doc.setFontSize(12);
+    doc.text(`Generated on: ${new Date().toLocaleDateString()}`, 20, 30);
+
+    // Add Formulation Table
+    doc.autoTable({
+        startY: 40,
+        head: [['Ingredient', 'Role', 'Amount (mg)']],
+        body: Array.from(document.querySelectorAll('#formulaBody tr')).map(tr => 
+            Array.from(tr.cells).map(cell => cell.innerText)
+        )
     });
-}
 
-function generateRecommendations(name, data, form, strategy) {
-    const list = document.getElementById('recList');
-    let recs = [];
+    // Add Logistics Table
+    doc.autoTable({
+        startY: doc.lastAutoTable.finalY + 10,
+        head: [['Metric', 'Value']],
+        body: Array.from(document.querySelectorAll('#logisticsBody tr')).map(tr => 
+            Array.from(tr.cells).map(cell => cell.innerText)
+        )
+    });
 
-    // Processing Method
-    if (form === 'tablet') {
-        recs.push(data.dose > 400 ? "<b>Method:</b> Wet Granulation recommended for high drug load." : "<b>Method:</b> Direct Compression suitable for this dose.");
-    }
-
-    // Storage & Packing
-    if (data.moistureSensitive) {
-        recs.push("<b>Packing:</b> Alu-Alu Blister required (Moisture sensitive).");
-        recs.push("<b>Storage:</b> Store in a dry place below 25°C.");
-    } else {
-        recs.push("<b>Packing:</b> PVC/PVDC Blister is sufficient.");
-        recs.push("<b>Storage:</b> Store below 30°C.");
-    }
-
-    // Strategy Advice
-    if (strategy === 'cost') recs.push("<b>Advice:</b> Use Corn Starch as a primary filler to minimize costs.");
-    if (strategy === 'quality') recs.push("<b>Advice:</b> Use Microcrystalline Cellulose (MCC PH-102) for superior tablet hardness.");
-
-    list.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
+    doc.save("Formulation_Report.pdf");
 }
