@@ -1,116 +1,95 @@
-// Advanced Pharmaceutical Database
-const apiDatabase = {
-    "Paracetamol": { dose: 500, density: 0.6, moisture: false, solubility: "Medium", cost: 12, alert: "Monitor hepatotoxicity at high doses." },
-    "Ibuprofen": { dose: 200, density: 0.5, moisture: false, solubility: "Poor", cost: 25, alert: "Potential gastric irritation; consider enteric coating." },
-    "Metronidazole": { dose: 500, density: 0.55, moisture: true, solubility: "Poor", cost: 35, alert: "Avoid alcohol during treatment (Disulfiram-like reaction)." },
-    "Diclofenac": { dose: 50, density: 0.7, moisture: true, solubility: "Good", cost: 80, alert: "Potent NSAID; check for cardiovascular contraindications." }
+const apiDb = {
+    "Paracetamol": { dose: 500, density: 0.6, moisture: false, cost: 15 },
+    "Metronidazole": { dose: 500, density: 0.5, moisture: true, cost: 40 },
+    "Diclofenac": { dose: 50, density: 0.7, moisture: true, cost: 85 },
+    "Ibuprofen": { dose: 200, density: 0.5, moisture: false, cost: 25 }
 };
 
-let myChart = null;
+let chartInstance = null;
 
-function calculateAll() {
+function calculateFormula() {
     const apiName = document.getElementById('apiSelect').value;
     const strategy = document.getElementById('strategy').value;
-    const batchUnits = parseInt(document.getElementById('batchSize').value) || 0;
-    const dosageForm = document.getElementById('dosageForm').value;
-    const api = apiDatabase[apiName];
+    const batchSize = parseInt(document.getElementById('batchSize').value);
+    const api = apiDb[apiName];
 
-    if(batchUnits <= 0) { alert("Please enter a valid batch size"); return; }
-
-    // 1. Optimum Weight Calculation
-    // For small doses, we need more filler to make the tablet handleable (~150mg min)
-    // For high doses, we allow 25-30% excipients.
+    // 1. حساب الوزن المثالي تلقائياً
+    // إذا كانت الجرعة صغيرة، نرفع الوزن لسهولة التصنيع، إذا كانت كبيرة نزيد 30% كمواد مضافة
     let unitWeight = api.dose < 100 ? 150 : Math.ceil((api.dose * 1.3) / 10) * 10;
     
-    // 2. Strategy-Based Excipient Selection
-    let excipients = { filler: "", binder: "", disintegrant: "Croscarmellose" };
-    let ratios = {};
+    // 2. توزيع النسب بناءً على الاستراتيجية
+    let filler, binder, others;
+    const excipientTotal = unitWeight - api.dose;
 
-    if (strategy === 'cost') {
-        excipients.filler = "Maize Starch";
-        excipients.binder = "Gelatin Solution";
-        ratios = { filler: 0.80, binder: 0.15, other: 0.05 };
-    } else if (strategy === 'quality') {
-        excipients.filler = "MCC PH-102 (Avicel)";
-        excipients.binder = "PVP K-30";
-        ratios = { filler: 0.65, binder: 0.25, other: 0.10 };
+    if (strategy === "cost") {
+        filler = excipientTotal * 0.85; binder = excipientTotal * 0.10; others = excipientTotal * 0.05;
+    } else if (strategy === "quality") {
+        filler = excipientTotal * 0.60; binder = excipientTotal * 0.25; others = excipientTotal * 0.15;
     } else {
-        excipients.filler = "Lactose DCL";
-        excipients.binder = "HPMC";
-        ratios = { filler: 0.75, binder: 0.15, other: 0.10 };
+        filler = excipientTotal * 0.75; binder = excipientTotal * 0.15; others = excipientTotal * 0.10;
     }
 
-    const excipientMass = unitWeight - api.dose;
-    const fillerAmt = excipientMass * ratios.filler;
-    const binderAmt = excipientMass * ratios.binder;
-    const otherAmt = excipientMass * ratios.other;
-
-    // 3. Logistics Calculations
-    const totalMassKg = (unitWeight * batchUnits) / 1000000;
+    // 3. الحسابات اللوجستية
+    const totalMassKg = (unitWeight * batchSize) / 1000000;
     const volumeM3 = (totalMassKg / (api.density * 1000)).toFixed(4);
-    const floorArea = (volumeM3 * 2.5).toFixed(2); // Increased factor for aisle space
-    const batchCost = (totalMassKg * api.cost * 1.2).toFixed(2); // 20% overhead added
-    const boxes = Math.ceil(batchUnits / 30);
+    const areaM2 = (volumeM3 * 2.2).toFixed(2); // مساحة التخزين مع الممرات
+    const totalCost = (totalMassKg * api.cost).toFixed(2);
+    const boxes = Math.ceil(batchSize / 30); // 30 قرص لكل عبوة
 
-    // 4. UI Update
-    document.getElementById('resultsContent').style.display = 'block';
-    
-    // Render Logistics Table
-    const body = document.getElementById('logisticsBody');
-    body.innerHTML = `
-        <tr><td><b>Optimum Unit Weight:</b></td><td>${unitWeight} mg</td></tr>
-        <tr><td><b>Total Batch Mass:</b></td><td>${totalMassKg.toFixed(2)} kg</td></tr>
-        <tr><td><b>Physical Volume:</b></td><td>${volumeM3} m³</td></tr>
-        <tr><td><b>Warehouse Floor Area:</b></td><td>~${floorArea} m²</td></tr>
-        <tr><td><b>Estimated Production Cost:</b></td><td>$${batchCost}</td></tr>
-        <tr><td><b>Retail Units (30s):</b></td><td>${boxes} Boxes</td></tr>
-    `;
-
-    // Render Recommendations
-    const list = document.getElementById('recList');
-    let recs = [];
-    recs.push(`<b>Primary Filler:</b> ${excipients.filler}`);
-    recs.push(`<b>Binder:</b> ${excipients.binder}`);
-    recs.push(api.dose > 400 ? "<b>Process:</b> Wet Granulation (High Load)." : "<b>Process:</b> Direct Compression.");
-    recs.push(api.moisture ? "<b>Packaging:</b> Alu-Alu Blister (Hygroscopic)." : "<b>Packaging:</b> PVC/ALU Blister.");
-    recs.push(`<b>Storage:</b> Store at 20-25°C${api.moisture ? ", Humidity <60%" : ""}.`);
-    recs.push(`<b>Safety Alert:</b> ${api.alert}`);
-    
-    list.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
-
-    renderChart(api.dose, fillerAmt, binderAmt, otherAmt);
+    // 4. عرض النتائج
+    document.getElementById('resultsArea').style.display = 'block';
+    showLogistics(unitWeight, totalMassKg, volumeM3, areaM2, totalCost, boxes);
+    showRecs(apiName, api, strategy);
+    drawChart(api.dose, filler, binder, others);
 }
 
-function renderChart(a, f, b, o) {
+function showLogistics(w, mass, vol, area, cost, boxes) {
+    const html = `
+        <tr><td><b>الوزن المثالي للوحدة:</b></td><td>${w} ملجم</td></tr>
+        <tr><td><b>كتلة التشغيلة الإجمالية:</b></td><td>${mass.toFixed(2)} كجم</td></tr>
+        <tr><td><b>الحجم الفيزيائي (Volume):</b></td><td>${vol} متر مكعب</td></tr>
+        <tr><td><b>مساحة التخزين المطلوبة:</b></td><td>${area} متر مربع</td></tr>
+        <tr><td><b>التكلفة التقديرية للمواد:</b></td><td>$${cost}</td></tr>
+        <tr><td><b>عدد العبوات النهائية (30 وحدة):</b></td><td>${boxes} عبوة</td></tr>
+    `;
+    document.getElementById('logisticsTable').innerHTML = html;
+}
+
+function showRecs(name, api, strategy) {
+    const list = document.getElementById('recommendationsText');
+    let recs = [
+        `<b>طريقة التصنيع:</b> ${api.dose >= 500 ? "التحبيب الرطب (Wet Granulation)" : "الكبس المباشر (Direct Compression)"}`,
+        `<b>ظروف التخزين:</b> درجة حرارة 20-25 مئوية ${api.moisture ? "مع رطوبة أقل من 60%" : ""}`,
+        `<b>خيار التغليف الأفضل:</b> ${api.moisture ? "ألومنيوم-ألومنيوم (Alu-Alu)" : "PVC/PVDC Standard"}`,
+        `<b>نصيحة الاستراتيجية:</b> ${strategy === 'quality' ? "استخدم MCC PH-102 لضمان صلابة ممتازة." : "استخدم نشا الذرة لتقليل التكاليف."}`
+    ];
+    list.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
+}
+
+function drawChart(api, filler, binder, others) {
     const ctx = document.getElementById('formulaChart').getContext('2d');
-    if (myChart) myChart.destroy();
-    myChart = new Chart(ctx, {
-        type: 'doughnut',
+    if (chartInstance) chartInstance.destroy();
+    chartInstance = new Chart(ctx, {
+        type: 'pie',
         data: {
-            labels: ['API', 'Filler', 'Binder', 'Other'],
+            labels: ['المادة الفعالة', 'المواد المالئة', 'المواد الرابطة', 'أخرى'],
             datasets: [{
-                data: [a, f, b, o],
-                backgroundColor: ['#2c3e50', '#3498db', '#f1c40f', '#e74c3c']
+                data: [api, filler, binder, others],
+                backgroundColor: ['#2c3e50', '#27ae60', '#f1c40f', '#e74c3c']
             }]
-        },
-        options: { plugins: { legend: { position: 'bottom' } } }
+        }
     });
 }
 
-function generatePDF() {
+function exportPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("PharmaForm AI Optimization Report", 15, 20);
-    doc.setFontSize(10);
-    doc.text("Confidential Manufacturing Data", 15, 28);
-    
+    doc.text("تقرير تحسين الصيغة الدوائية", 150, 20, { align: 'right' });
     doc.autoTable({
-        startY: 35,
-        head: [['Logistics Parameter', 'Calculated Value']],
-        body: Array.from(document.querySelectorAll('#logisticsTable tr')).map(tr => [tr.cells[0].innerText, tr.cells[1].innerText]),
-        theme: 'striped'
+        startY: 30,
+        head: [['المعيار', 'القيمة']],
+        body: Array.from(document.querySelectorAll('#logisticsTable tr')).map(tr => [tr.cells[1].innerText, tr.cells[0].innerText]),
+        styles: { font: 'courier', halign: 'right' }
     });
-
-    doc.save("Pharma_Optimization_Report.pdf");
+    doc.save("Pharma_Report.pdf");
 }
