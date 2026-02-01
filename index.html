@@ -2,7 +2,8 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>مطور الصيغ الدوائية الذكي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام الصيدلة الذكي - PharmaForm PRO</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -10,14 +11,18 @@
 </head>
 <body>
     <div class="container">
-        <div class="card">
-            <h1>المنظمة الذكية للصيغ الدوائية (PRO)</h1>
-            <div class="grid">
+        <header>
+            <h1>المنظم الذكي للصيغ الدوائية <span class="badge">PRO</span></h1>
+            <p>تحسين التركيبة، اللوجستيات، وتكلفة الإنتاج</p>
+        </header>
+
+        <div class="card input-section">
+            <div class="grid-inputs">
                 <div class="field">
-                    <label>الشكل الصيدلاني المستهدف:</label>
+                    <label>الشكل الصيدلاني:</label>
                     <select id="dosageForm">
-                        <option value="tablet">أقراص (Tablets)</option>
-                        <option value="capsule">كبسولات (Capsules)</option>
+                        <option value="tablet">أقراص (Tablet)</option>
+                        <option value="capsule">كبسولات (Capsule)</option>
                         <option value="syrup">شراب (Syrup)</option>
                     </select>
                 </div>
@@ -39,31 +44,31 @@
                     </select>
                 </div>
                 <div class="field">
-                    <label>حجم التشغيلة (عدد الوحدات):</label>
-                    <input type="number" id="batchSize" value="10000">
+                    <label>حجم التشغيلة (Batch Units):</label>
+                    <input type="number" id="batchSize" value="10000" min="1">
                 </div>
             </div>
-            <button class="btn-calc" onclick="calculateFormula()">تحليل وتحسين الصيغة</button>
+            <button onclick="runOptimizer()" class="btn-main">بدء عملية التحسين</button>
         </div>
 
         <div id="resultsArea" style="display:none;">
             <div class="results-grid">
                 <div class="card">
-                    <h3>توزيع المكونات (مخطط دائري)</h3>
+                    <h3>توزيع المكونات</h3>
                     <canvas id="formulaChart"></canvas>
                 </div>
                 <div class="card">
-                    <h3>التوصيات الفنية</h3>
-                    <ul id="recommendationsText"></ul>
+                    <h3>التوصيات الفنية والبيئية</h3>
+                    <ul id="recList" class="rec-list"></ul>
                 </div>
             </div>
 
-            <div class="card">
-                <h3>النتائج اللوجستية والإنتاجية</h3>
-                <table>
-                    <tbody id="logisticsTable"></tbody>
+            <div class="card table-card">
+                <h3>نتائج التشغيلة واللوجستيات</h3>
+                <table id="logisticsTable">
+                    <tbody id="logisticsBody"></tbody>
                 </table>
-                <button class="btn-pdf" onclick="exportPDF()">تحميل تقرير PDF احترافي</button>
+                <button onclick="downloadPDFReport()" class="btn-pdf">تحميل تقرير PDF كامل</button>
             </div>
         </div>
     </div>
