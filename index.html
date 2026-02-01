@@ -1,9 +1,8 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PharmaForm AI Pro</title>
+    <title>مطور الصيغ الدوائية الذكي</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -11,68 +10,62 @@
 </head>
 <body>
     <div class="container">
-        <header>
-            <h1>PharmaForm AI <span class="badge">PRO</span></h1>
-            <p>Advanced Pharmaceutical Formulation & Logistics Optimizer</p>
-        </header>
-
-        <main>
-            <section class="card input-section">
-                <div class="grid-inputs">
-                    <div class="field">
-                        <label>Target Dosage Form</label>
-                        <select id="dosageForm">
-                            <option value="tablet">Tablet</option>
-                            <option value="capsule">Capsule</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Active Ingredient (API)</label>
-                        <select id="apiSelect">
-                            <option value="Paracetamol">Paracetamol</option>
-                            <option value="Ibuprofen">Ibuprofen</option>
-                            <option value="Metronidazole">Metronidazole</option>
-                            <option value="Diclofenac">Diclofenac Sodium</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Strategy</label>
-                        <select id="strategy">
-                            <option value="balanced">Balanced Strategy</option>
-                            <option value="cost">Cost-Wise (Economy)</option>
-                            <option value="quality">Quality-Wise (Premium)</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Batch Size (Units)</label>
-                        <input type="number" id="batchSize" value="10000" min="1">
-                    </div>
+        <div class="card">
+            <h1>المنظمة الذكية للصيغ الدوائية (PRO)</h1>
+            <div class="grid">
+                <div class="field">
+                    <label>الشكل الصيدلاني المستهدف:</label>
+                    <select id="dosageForm">
+                        <option value="tablet">أقراص (Tablets)</option>
+                        <option value="capsule">كبسولات (Capsules)</option>
+                        <option value="syrup">شراب (Syrup)</option>
+                    </select>
                 </div>
-                <button onclick="calculateAll()" class="btn-main">Optimize & Generate Report</button>
-            </section>
-
-            <div id="resultsContent" style="display:none;">
-                <div class="grid-results">
-                    <div class="card chart-box">
-                        <h3>Formulation Breakdown</h3>
-                        <canvas id="formulaChart"></canvas>
-                    </div>
-                    <div class="card info-box">
-                        <h3>Manufacturing Recommendations</h3>
-                        <ul id="recList" class="rec-list"></ul>
-                    </div>
+                <div class="field">
+                    <label>المادة الفعالة (API):</label>
+                    <select id="apiSelect">
+                        <option value="Paracetamol">باراسيتامول</option>
+                        <option value="Metronidazole">مترونيدازول</option>
+                        <option value="Diclofenac">ديكلوفيناك صوديوم</option>
+                        <option value="Ibuprofen">إيبوبروفين</option>
+                    </select>
                 </div>
-
-                <div class="card table-box">
-                    <h3>Batch Logistics & Results</h3>
-                    <table id="logisticsTable">
-                        <tbody id="logisticsBody"></tbody>
-                    </table>
+                <div class="field">
+                    <label>إستراتيجية التركيبة:</label>
+                    <select id="strategy">
+                        <option value="balanced">متوازنة (Balanced)</option>
+                        <option value="cost">اقتصادية (Cost-Wise)</option>
+                        <option value="quality">عالية الجودة (Quality-Wise)</option>
+                    </select>
                 </div>
-
-                <button onclick="generatePDF()" class="btn-pdf">Download Professional PDF Report</button>
+                <div class="field">
+                    <label>حجم التشغيلة (عدد الوحدات):</label>
+                    <input type="number" id="batchSize" value="10000">
+                </div>
             </div>
-        </main>
+            <button class="btn-calc" onclick="calculateFormula()">تحليل وتحسين الصيغة</button>
+        </div>
+
+        <div id="resultsArea" style="display:none;">
+            <div class="results-grid">
+                <div class="card">
+                    <h3>توزيع المكونات (مخطط دائري)</h3>
+                    <canvas id="formulaChart"></canvas>
+                </div>
+                <div class="card">
+                    <h3>التوصيات الفنية</h3>
+                    <ul id="recommendationsText"></ul>
+                </div>
+            </div>
+
+            <div class="card">
+                <h3>النتائج اللوجستية والإنتاجية</h3>
+                <table>
+                    <tbody id="logisticsTable"></tbody>
+                </table>
+                <button class="btn-pdf" onclick="exportPDF()">تحميل تقرير PDF احترافي</button>
+            </div>
+        </div>
     </div>
     <script src="script.js"></script>
 </body>
