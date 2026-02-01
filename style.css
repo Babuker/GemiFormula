@@ -1,28 +1,24 @@
-:root {
-    --primary: #004d40;
-    --secondary: #00bcd4;
-    --bg: #f0f2f5;
-    --text: #333;
-}
-
-body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; padding: 20px; line-height: 1.6; }
+:root { --p: #004d40; --s: #00acc1; --bg: #f5f7f9; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
 .container { max-width: 1000px; margin: auto; }
-header { text-align: center; margin-bottom: 30px; }
-.badge { background: var(--secondary); color: white; font-size: 0.5em; padding: 4px 8px; border-radius: 4px; vertical-align: middle; }
+header { text-align: center; margin-bottom: 30px; position: relative; }
+.lang-toggle { position: absolute; top: 0; left: 0; }
+.lang-toggle button { background: none; border: none; cursor: pointer; color: var(--p); font-weight: bold; }
 
-.card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); margin-bottom: 20px; }
-.grid-inputs { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 20px; }
+.card { background: white; padding: 25px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
+.input-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; }
 .field label { display: block; font-weight: bold; margin-bottom: 8px; font-size: 0.9em; }
 select, input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
 
-.btn-main { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1.1em; transition: 0.3s; }
-.btn-main:hover { background: #00332c; }
-.btn-pdf { width: 100%; padding: 15px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 10px; font-weight: bold; }
+.btn-main { grid-column: 1 / -1; background: var(--p); color: white; border: none; padding: 15px; border-radius: 8px; font-weight: bold; cursor: pointer; }
+.btn-pdf { width: 100%; background: #c62828; color: white; border: none; padding: 12px; border-radius: 8px; margin-top: 15px; cursor: pointer; }
 
-.grid-results { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+.main-results { display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px; }
 table { width: 100%; border-collapse: collapse; }
-td, th { padding: 12px; border-bottom: 1px solid #eee; text-align: left; }
-.rec-list { padding-left: 20px; }
-.rec-list li { margin-bottom: 10px; }
+td { padding: 12px; border-bottom: 1px solid #eee; text-align: inherit; }
+#recList li { margin-bottom: 12px; font-size: 0.95em; }
 
-@media (max-width: 768px) { .grid-results { grid-template-columns: 1fr; } }
+/* RTL/LTR Support */
+[dir="rtl"] { text-align: right; }
+[dir="ltr"] { text-align: left; }
+[dir="ltr"] .lang-toggle { left: auto; right: 0; }
