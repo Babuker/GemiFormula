@@ -3,11 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PharmaForm AI - Ultimate Edition</title>
+    <title>GemiFormula AI PRO - Ultimate Edition</title>
     <link rel="stylesheet" href="style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
 </head>
 <body>
     <div class="container">
@@ -17,7 +18,7 @@
                 <button onclick="setLang('en')">English</button>
             </div>
             <h1 id="txt-title">المنظم الصيدلاني الذكي PRO</h1>
-            <p id="txt-subtitle">نظام الخبير لتصميم الصيغ الدوائية والتحليل الاقتصادي</p>
+            <p id="txt-subtitle">النظام الخبير لتطوير الصيغ وحماية البيانات</p>
         </header>
 
         <section class="card input-section">
@@ -25,8 +26,8 @@
                 <div class="field">
                     <label id="lbl-form">الشكل الصيدلاني:</label>
                     <select id="dosageForm">
-                        <option value="tablet" id="opt-tablet">أقراص (Tablets)</option>
-                        <option value="capsule" id="opt-capsule">كبسولات (Capsules)</option>
+                        <option value="tablet">أقراص (Tablets)</option>
+                        <option value="capsule">كبسولات (Capsules)</option>
                     </select>
                 </div>
                 <div class="field">
@@ -41,9 +42,9 @@
                 <div class="field">
                     <label id="lbl-strat">إستراتيجية التركيبة:</label>
                     <select id="strategy">
-                        <option value="balanced" id="opt-bal">متوازنة (Balanced)</option>
-                        <option value="cost" id="opt-cost">اقتصادية (Cost-Wise)</option>
-                        <option value="quality" id="opt-qual">عالية الجودة (Quality-Wise)</option>
+                        <option value="balanced">متوازنة (Balanced)</option>
+                        <option value="cost">اقتصادية (Cost-Wise)</option>
+                        <option value="quality">عالية الجودة (Quality-Wise)</option>
                     </select>
                 </div>
                 <div class="field">
@@ -89,13 +90,20 @@
             </div>
 
             <div class="card cost-compare-card">
-                <h3 id="txt-cost-compare">تحليل مقارنة التكاليف (اقتصادي vs جودة)</h3>
+                <h3 id="txt-cost-compare">تحليل مقارنة التكاليف</h3>
                 <div class="chart-bar-container">
                     <canvas id="costComparisonChart"></canvas>
                 </div>
-                <button onclick="generatePDF()" class="btn-pdf" id="btn-pdf">تحميل التقرير الفني (PDF)</button>
+                <button onclick="generatePDF()" class="btn-pdf" id="btn-pdf">تحميل التقرير المحمي (PDF)</button>
             </div>
         </div>
+
+        <footer>
+            <div class="copyright">
+                <p id="footer-text">&copy; 2026 GemiFormula AI. جميع الحقوق محفوظة قانونياً.</p>
+                <div style="display:none;"><canvas id="barcodeCanvas"></canvas></div>
+            </div>
+        </footer>
     </div>
     <script src="script.js"></script>
 </body>
