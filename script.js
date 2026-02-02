@@ -1,41 +1,5 @@
-const apiDb = {
-    "Paracetamol": { dose: 500, dens: 0.6, moist: false, cost: 15, alert: "Hepatotoxicity alert." },
-    "Metronidazole": { dose: 500, dens: 0.5, moist: true, cost: 42, alert: "Avoid alcohol." },
-    "Diclofenac": { dose: 50, dens: 0.7, moist: true, cost: 88, alert: "NSAID precautions." },
-    "Ibuprofen": { dose: 200, dens: 0.5, moist: false, cost: 28, alert: "Take with food." }
-};
-
-const translations = {
-    ar: {
-        title: "المنظم الصيدلاني الذكي PRO", subtitle: "تصميم الصيغ الدوائية واللوجستيات المتقدمة",
-        lblForm: "الشكل الصيدلاني:", lblApi: "المادة الفعالة:", lblStrat: "إستراتيجية التركيبة:", lblBatch: "حجم التشغيلة (Batch):",
-        btnRun: "تحليل وتحسين الصيغة", txtChart: "توزيع المكونات", txtRecs: "التوصيات والبيانات الفنية",
-        txtLog: "النتائج اللوجستية والإنتاجية", btnPdf: "تحميل التقرير (PDF)",
-        unitW: "الوزن المثالي للوحدة", mass: "إجمالي الكتلة", vol: "الحجم الفيزيائي", area: "مساحة التخزين", cost: "التكلفة التقديرية", boxes: "عدد الصناديق"
-    },
-    en: {
-        title: "PharmaForm AI Master", subtitle: "Drug Formulation & Advanced Logistics",
-        lblForm: "Dosage Form:", lblApi: "Active Ingredient:", lblStrat: "Strategy:", lblBatch: "Batch Size (Units):",
-        btnRun: "Optimize Formulation", txtChart: "Ingredient Distribution", txtRecs: "Technical Recommendations",
-        txtLog: "Logistics & Production Results", btnPdf: "Download PDF Report",
-        unitW: "Optimum Unit Weight", mass: "Total Batch Mass", vol: "Physical Volume", area: "Storage Floor Area", cost: "Estimated Cost", boxes: "Total Boxes"
-    }
-};
-
-let currentLang = 'ar';
-let myChart = null;
-
-function setLang(lang) {
-    currentLang = lang;
-    const html = document.getElementById('mainHtml');
-    html.dir = lang === 'ar' ? 'rtl' : 'ltr';
-    html.lang = lang;
-    
-    Object.keys(translations[lang]).forEach(key => {
-        const el = document.getElementById(key) || document.getElementById(`lbl-${key.split('lbl')[1]?.toLowerCase()}`) || document.getElementById(`btn-${key.split('btn')[1]?.toLowerCase()}`) || document.getElementById(`txt-${key.split('txt')[1]?.toLowerCase()}`);
-        if(el) el.innerText = translations[lang][key];
-    });
-}
+// أسعار المكونات التقديرية لكل كجم
+const excipientPrices = { filler: 5, binder: 25, other: 15 };
 
 function calculateAll() {
     const apiName = document.getElementById('apiSelect').value;
@@ -47,79 +11,69 @@ function calculateAll() {
     // 1. حساب الوزن التلقائي
     let unitW = (form === 'syrup') ? 100 : (api.dose < 100 ? 150 : Math.ceil(api.dose * 1.35 / 10) * 10);
     
-    // 2. منطق المكونات بناءً على الاستراتيجية
+    // 2. توزيع المكونات بناءً على الاستراتيجية
     let rem = unitW - api.dose;
-    let filler, binder, other;
-    if(strategy === 'cost') { filler = rem*0.85; binder = rem*0.1; other = rem*0.05; }
-    else if(strategy === 'quality') { filler = rem*0.6; binder = rem*0.25; other = rem*0.15; }
-    else { filler = rem*0.75; binder = rem*0.15; other = rem*0.1; }
+    let f_amt, b_amt, o_amt;
+    if(strategy === 'cost') { f_amt = rem*0.85; b_amt = rem*0.1; o_amt = rem*0.05; }
+    else if(strategy === 'quality') { f_amt = rem*0.6; b_amt = rem*0.25; o_amt = rem*0.15; }
+    else { f_amt = rem*0.75; b_amt = rem*0.15; o_amt = rem*0.1; }
 
-    // 3. اللوجستيات
-    const kg = (unitW * batch) / 1000000;
-    const m3 = (kg / (api.dens * 1000)).toFixed(4);
-    const m2 = (m3 * 2.5).toFixed(2);
-    const cost = (kg * api.cost).toFixed(2);
-    const boxes = Math.ceil(batch / 30);
+    // 3. حسابات التكلفة والنسب لكل عنصر
+    const ingredients = [
+        { name: apiName, role: "Active (API)", qty: api.dose, perc: (api.dose/unitW)*100, cost: (api.dose * api.cost / 1000000) },
+        { name: "Filler (MCC/Lactose)", role: "Diluent", qty: f_amt, perc: (f_amt/unitW)*100, cost: (f_amt * excipientPrices.filler / 1000000) },
+        { name: "Binder (PVP/HPMC)", role: "Adhesive", qty: b_amt, perc: (b_amt/unitW)*100, cost: (b_amt * excipientPrices.binder / 1000000) },
+        { name: "Lubricant/Others", role: "Flow/Glidant", qty: o_amt, perc: (o_amt/unitW)*100, cost: (o_amt * excipientPrices.other / 1000000) }
+    ];
 
-    // 4. العرض
+    // 4. عرض النتائج في الجداول
     document.getElementById('resultsArea').style.display = 'block';
-    renderTable(unitW, kg, m3, m2, cost, boxes, form);
-    renderRecs(api, form, strategy);
-    drawChart(api.dose, filler, binder, other);
-}
+    
+    // أ. جدول التركيبة الأساسي
+    let formulaHtml = "";
+    ingredients.forEach(ing => {
+        formulaHtml += `<tr>
+            <td>${ing.name}</td>
+            <td>${ing.role}</td>
+            <td>${ing.qty.toFixed(1)} mg</td>
+            <td>${ing.perc.toFixed(1)}%</td>
+            <td>$${ing.cost.toFixed(4)}</td>
+        </tr>`;
+    });
+    document.getElementById('formulaBody').innerHTML = formulaHtml;
 
-function renderTable(w, kg, m3, m2, cost, boxes, form) {
-    const unit = form === 'syrup' ? 'ml' : 'mg';
-    const t = translations[currentLang];
-    document.getElementById('logisticsBody').innerHTML = `
-        <tr><td><b>${t.unitW}:</b></td><td>${w} ${unit}</td></tr>
-        <tr><td><b>${t.mass}:</b></td><td>${kg.toFixed(2)} kg</td></tr>
-        <tr><td><b>${t.vol}:</b></td><td>${m3} m³</td></tr>
-        <tr><td><b>${t.area}:</b></td><td>${m2} m²</td></tr>
-        <tr><td><b>${t.cost}:</b></td><td>$${cost}</td></tr>
-        <tr><td><b>${t.boxes}:</b></td><td>${boxes} Units</td></tr>
+    // ب. ملخص التشغيلة المختصر
+    const totalMass = (unitW * batch / 1000000).toFixed(2);
+    const totalCost = (ingredients.reduce((sum, i) => sum + i.cost, 0) * batch).toFixed(2);
+    const area = (totalMass / (api.dens * 400)).toFixed(2);
+    
+    document.getElementById('batchSummaryBody').innerHTML = `
+        <tr><td>إجمالي وزن التشغيلة:</td><td>${totalMass} كجم</td></tr>
+        <tr><td>تكلفة الإنتاج الإجمالية:</td><td>$${totalCost}</td></tr>
+        <tr><td>المساحة التخزينية المقدرة:</td><td>${area} م²</td></tr>
+        <tr><td>العبوات النهائية:</td><td>${Math.ceil(batch/30)} عبوة</td></tr>
     `;
+
+    // ج. التوصيات المختصرة و IPQC
+    renderCompactRecs(api, form, unitW);
+    drawChart(api.dose, f_amt, b_amt, o_amt);
 }
 
-function renderRecs(api, form, strategy) {
+function renderCompactRecs(api, form, unitW) {
     const list = document.getElementById('recList');
     const isAr = currentLang === 'ar';
-    let recs = [];
+    
+    // حدود تفاوت الوزن
+    const limit = unitW > 324 ? 5 : 7.5;
+    const range = `${(unitW * (1 - limit/100)).toFixed(1)} - ${(unitW * (1 + limit/100)).toFixed(1)}`;
 
-    if(form === 'tablet') {
-        recs.push(isAr ? `<b>طريقة التصنيع:</b> ${api.dose > 400 ? 'التحبيب الرطب' : 'الكبس المباشر'}` : `<b>Method:</b> ${api.dose > 400 ? 'Wet Granulation' : 'Direct Compression'}`);
-    } else if(form === 'syrup') {
-        recs.push(isAr ? `<b>المعالجة:</b> الخلط بالحرارة مع إضافة مادة بنزوات الصوديوم كحافظة.` : `<b>Process:</b> Hot mixing with Sodium Benzoate as preservative.`);
-    }
-
-    recs.push(isAr ? `<b>التغليف:</b> ${api.moist ? 'Alu-Alu لحماية المادة من الرطوبة' : 'PVC/PVDC قياسي'}` : `<b>Packaging:</b> ${api.moist ? 'Alu-Alu (Moisture barrier)' : 'PVC/PVDC Standard'}`);
-    recs.push(isAr ? `<b>التخزين:</b> درجة حرارة أقل من 25° مئوية.` : `<b>Storage:</b> Store below 25°C.`);
-    recs.push(`<b>Alert:</b> ${api.alert}`);
-
-    list.innerHTML = recs.map(r => `<li>${r}</li>`).join('');
-}
-
-function drawChart(a, f, b, o) {
-    const ctx = document.getElementById('formulaChart').getContext('2d');
-    if(myChart) myChart.destroy();
-    myChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: currentLang === 'ar' ? ['المادة الفعالة', 'مالئ', 'رابط', 'أخرى'] : ['API', 'Filler', 'Binder', 'Others'],
-            datasets: [{ data: [a, f, b, o], backgroundColor: ['#1a5276', '#27ae60', '#f1c40f', '#e74c3c'] }]
-        },
-        options: { plugins: { legend: { position: 'bottom', rtl: currentLang === 'ar' } } }
-    });
-}
-
-function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("PharmaForm Optimization Report", 20, 20);
-    doc.autoTable({
-        startY: 30,
-        head: [['Metric', 'Value']],
-        body: Array.from(document.querySelectorAll('#logisticsTable tr')).map(tr => [tr.cells[0].innerText, tr.cells[1].innerText])
-    });
-    doc.save("Pharma_Report.pdf");
+    list.innerHTML = `
+        <li><b>التغليف:</b> ${api.moist ? 'Alu-Alu' : 'PVC/PVDC'}</li>
+        <li><b>المعالجة:</b> ${unitW > 500 ? 'التحبيب الرطب' : 'الكبس المباشر'}</li>
+        <hr>
+        <span style="color:var(--p); font-weight:bold;">معايير الجودة (IPQC):</span>
+        <li><b>تفاوت الوزن:</b> ${range} ملجم (±${limit}%)</li>
+        <li><b>الصلابة:</b> 8 - 14 كجم</li>
+        <li><b>التفكك:</b> < 15 دقيقة</li>
+    `;
 }
