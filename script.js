@@ -1,83 +1,48 @@
-const excipientDB = {
-    filler: { name: "Microcrystalline Cellulose", cost: 0.00002 },
-    binder: { name: "PVP K30", cost: 0.00006 },
-    disintegrant: { name: "Sodium Starch Glycolate", cost: 0.00005 }
-};
-
 function runFormulation() {
 
-    const apiName = document.getElementById("apiSelect").value;
     const apiDose = Number(document.getElementById("apiDose").value);
-    const method = document.getElementById("processMethod").value;
-    const std = document.getElementById("pharmaStd").value;
+    const batchSize = Number(document.getElementById("batchSize").value);
+    const strategy = document.getElementById("strategy").value;
 
-    let fillerRatio, binderRatio, disRatio;
+    /* ---- Internal logic (hidden from user) ---- */
 
-    if (method === "dc") {
-        fillerRatio = 0.25;
-        binderRatio = 0.05;
-        disRatio = 0.05;
-    } else if (method === "wg") {
-        fillerRatio = 0.20;
-        binderRatio = 0.10;
-        disRatio = 0.05;
+    let processingMethod, packaging;
+
+    if (strategy === "cost") {
+        processingMethod = "Direct Compression";
+        packaging = "PVC Blister";
+    } else if (strategy === "quality") {
+        processingMethod = "Wet Granulation";
+        packaging = "Alu-Alu Blister";
     } else {
-        fillerRatio = 0.22;
-        binderRatio = 0.08;
-        disRatio = 0.05;
+        processingMethod = "Dry Granulation";
+        packaging = "PVC/PVDC Blister";
     }
 
-    const excipientTotal = apiDose * (fillerRatio + binderRatio + disRatio);
-    const totalWeight = apiDose + excipientTotal;
+    /* ---- Batch calculations ---- */
 
-    const rows = [
-        {
-            name: apiName,
-            qty: apiDose,
-            role: "Active Pharmaceutical Ingredient",
-            ratio: (apiDose / totalWeight * 100).toFixed(1),
-            cost: "—"
-        },
-        {
-            name: excipientDB.filler.name,
-            qty: apiDose * fillerRatio,
-            role: "Diluent",
-            ratio: (fillerRatio * 100).toFixed(1),
-            cost: excipientDB.filler.cost
-        },
-        {
-            name: excipientDB.binder.name,
-            qty: apiDose * binderRatio,
-            role: "Binder",
-            ratio: (binderRatio * 100).toFixed(1),
-            cost: excipientDB.binder.cost
-        },
-        {
-            name: excipientDB.disintegrant.name,
-            qty: apiDose * disRatio,
-            role: "Disintegrant",
-            ratio: (disRatio * 100).toFixed(1),
-            cost: excipientDB.disintegrant.cost
-        }
-    ];
+    const unitWeight = apiDose * 1.4; // simple, realistic assumption
+    const totalKg = (unitWeight * batchSize) / 1_000_000;
 
-    const tbody = document.getElementById("formulaTable");
-    tbody.innerHTML = "";
+    const costPerKg = strategy === "cost" ? 22 : strategy === "quality" ? 40 : 30;
+    const totalCost = (totalKg * costPerKg).toFixed(2);
 
-    rows.forEach(r => {
-        tbody.innerHTML += `
-            <tr>
-                <td>${r.name}</td>
-                <td>${r.qty.toFixed(2)}</td>
-                <td>${r.role}</td>
-                <td>${r.ratio}</td>
-                <td>${r.cost}</td>
-            </tr>
-        `;
-    });
+    const pallets = Math.ceil(totalKg / 500);
+    const area = (pallets * 1.2).toFixed(2);
 
-    document.getElementById("recList").innerHTML = `
-        <li>Processing method aligned with ${method.toUpperCase()}</li>
-        <li>Excipient selection compliant with ${std}</li>
+    /* ---- Render batch table (ONE LINE) ---- */
+
+    document.getElementById("batchTable").innerHTML = `
+        <tr>
+            <td>${batchSize}</td>
+            <td>${totalCost}</td>
+            <td>${pallets}</td>
+            <td>${area}</td>
+        </tr>
     `;
+
+    /* ---- Single-line recommendation ---- */
+
+    document.getElementById("recLine").innerText =
+        `Method: ${processingMethod} | Storage: Below 25°C, dry place | Packaging: ${packaging}`;
 }
