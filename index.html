@@ -1,40 +1,103 @@
-<div id="resultsArea" style="display:none;">
-    <div class="main-results-grid">
-        <div class="card primary-card">
-            <h3 id="txt-formula-title">تفاصيل التركيبة الأساسية (لكل وحدة)</h3>
-            <div class="table-responsive">
-                <table id="formulaTable">
-                    <thead>
-                        <tr>
-                            <th id="th-name">المكون</th>
-                            <th id="th-role">الوظيفة</th>
-                            <th id="th-qty">الكمية</th>
-                            <th id="th-perc">النسبة</th>
-                            <th id="th-cost">التكلفة</th>
-                        </tr>
-                    </thead>
-                    <tbody id="formulaBody"></tbody>
-                </table>
+<!DOCTYPE html>
+<html lang="ar" dir="rtl" id="mainHtml">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PharmaForm AI - Master Pro</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="lang-toggle">
+                <button onclick="setLang('ar')">العربية</button> | 
+                <button onclick="setLang('en')">English</button>
+            </div>
+            <h1 id="txt-title">المنظم الصيدلاني الذكي PRO</h1>
+            <p id="txt-subtitle">نظام تصميم الصيغ الدوائية والتحليل المالي واللوجستي</p>
+        </header>
+
+        <section class="card input-section">
+            <div class="grid-inputs">
+                <div class="field">
+                    <label id="lbl-form">الشكل الصيدلاني:</label>
+                    <select id="dosageForm">
+                        <option value="tablet">أقراص (Tablet)</option>
+                        <option value="capsule">كبسولات (Capsule)</option>
+                        <option value="syrup">شراب (Syrup)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-api">المادة الفعالة (API):</label>
+                    <select id="apiSelect">
+                        <option value="Paracetamol">Paracetamol</option>
+                        <option value="Metronidazole">Metronidazole</option>
+                        <option value="Diclofenac">Diclofenac Sodium</option>
+                        <option value="Ibuprofen">Ibuprofen</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-strat">إستراتيجية التركيبة:</label>
+                    <select id="strategy">
+                        <option value="balanced">متوازنة (Balanced)</option>
+                        <option value="cost">اقتصادية (Cost-Wise)</option>
+                        <option value="quality">عالية الجودة (Quality-Wise)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-batch">حجم التشغيلة (الوحدات):</label>
+                    <input type="number" id="batchSize" value="10000">
+                </div>
+            </div>
+            <button onclick="calculateAll()" class="btn-main" id="btn-run">تحليل وتحسين الصيغة</button>
+        </section>
+
+        <div id="resultsArea" style="display:none;">
+            <div class="main-results-grid">
+                <div class="card primary-card">
+                    <h3 id="txt-formula-title">تفاصيل التركيبة الأساسية (لكل وحدة)</h3>
+                    <div class="table-responsive">
+                        <table>
+                            <thead>
+                                <tr id="table-head">
+                                    <th>المكون</th><th>الوظيفة</th><th>الكمية</th><th>النسبة</th><th>التكلفة</th>
+                                </tr>
+                            </thead>
+                            <tbody id="formulaBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card chart-card">
+                    <h3 id="txt-chart">توزيع المكونات</h3>
+                    <canvas id="formulaChart"></canvas>
+                </div>
+            </div>
+
+            <div class="secondary-results-grid">
+                <div class="card">
+                    <h3 id="txt-batch-details">ملخص التشغيلة واللوجستيات</h3>
+                    <table class="summary-table">
+                        <tbody id="batchSummaryBody"></tbody>
+                    </table>
+                </div>
+                <div class="card">
+                    <h3 id="txt-recs">التوصيات ومعايير الجودة (IPQC)</h3>
+                    <ul id="recList" class="rec-list"></ul>
+                </div>
+            </div>
+
+            <div class="card cost-compare-card">
+                <h3 id="txt-cost-title">تحليل مقارنة التكاليف (اقتصادي vs جودة)</h3>
+                <div class="chart-bar-container">
+                    <canvas id="costComparisonChart"></canvas>
+                </div>
+                <button onclick="generatePDF()" class="btn-pdf" id="btn-pdf">تحميل التقرير الفني المكتمل (PDF)</button>
             </div>
         </div>
-        <div class="card chart-card">
-            <h3 id="txt-chart">توزيع المكونات</h3>
-            <canvas id="formulaChart"></canvas>
-        </div>
     </div>
-
-    <div class="secondary-results-grid">
-        <div class="card info-card">
-            <h3 id="txt-batch-details">ملخص التشغيلة واللوجستيات</h3>
-            <table class="summary-table">
-                <tbody id="batchSummaryBody"></tbody>
-            </table>
-        </div>
-        <div class="card info-card">
-            <h3 id="txt-recs">التوصيات ومعايير الجودة</h3>
-            <ul id="recList" class="rec-list"></ul>
-        </div>
-    </div>
-    
-    <button onclick="generatePDF()" class="btn-pdf" id="btn-pdf">تحميل التقرير الكامل PDF</button>
-</div>
+    <script src="script.js"></script>
+</body>
+</html>
