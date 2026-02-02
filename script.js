@@ -5,24 +5,50 @@ const apiDb = {
     "Ibuprofen": { dose: 200, dens: 0.5, moist: false, cost: 25 }
 };
 
-const excipientPrices = { filler: 6, binder: 28, other: 18 };
-
 const i18n = {
     ar: {
-        formula_title: "تفاصيل التركيبة الأساسية (لكل وحدة)",
-        batch_details: "ملخص التشغيلة واللوجستيات",
-        recs: "التوصيات ومعايير الجودة (IPQC)",
-        cost_title: "تحليل مقارنة التكاليف (اقتصادي vs جودة)",
+        title: "المنظم الصيدلاني الذكي PRO",
+        subtitle: "نظام تصميم الصيغ الدوائية والتحليل المالي واللوجستي",
+        lblForm: "الشكل الصيدلاني:",
+        lblApi: "المادة الفعالة (API):",
+        lblStrat: "إستراتيجية التركيبة:",
+        lblBatch: "حجم التشغيلة (الوحدات):",
+        optTablet: "أقراص (Tablet)", optCapsule: "كبسولات (Capsule)", optSyrup: "شراب (Syrup)",
+        optBal: "متوازنة", optCost: "اقتصادية", optQual: "عالية الجودة",
+        btnRun: "تحليل وتحسين الصيغة",
+        formulaTitle: "تفاصيل التركيبة الأساسية (لكل وحدة)",
+        chartTitle: "توزيع المكونات",
+        batchDetails: "ملخص التشغيلة واللوجستيات",
+        recsTitle: "التوصيات ومعايير الجودة (IPQC)",
+        costTitle: "تحليل مقارنة التكاليف (اقتصادي vs جودة)",
         th: ["المكون", "الوظيفة", "الكمية", "النسبة", "التكلفة"],
-        log_labels: ["إجمالي وزن التشغيلة:", "تكلفة الإنتاج الإجمالية:", "المساحة التخزينية:", "العبوات النهائية:"]
+        ingNames: ["المادة الفعالة", "مادة مالئة", "مادة رابطة", "إضافات أخرى"],
+        roles: ["مادة فعالة", "مخفف", "لاصق", "مساعد سريان"],
+        logLabels: ["إجمالي الوزن:", "التكلفة الإجمالية:", "المساحة التخزينية:", "العبوات النهائية:"],
+        recLabels: ["التغليف:", "طريقة التصنيع:", "معايير الجودة (IPQC):", "تفاوت الوزن:", "الصلابة:", "التفكك:"],
+        btnPdf: "تحميل التقرير المكتمل (PDF)"
     },
     en: {
-        formula_title: "Core Formula Details (Per Unit)",
-        batch_details: "Batch Summary & Logistics",
-        recs: "Recommendations & Quality (IPQC)",
-        cost_title: "Cost Analysis (Economic vs Quality)",
-        th: ["Ingredient", "Role", "Qty", "Percentage", "Cost"],
-        log_labels: ["Total Batch Mass:", "Total Production Cost:", "Storage Space:", "Final Boxes:"]
+        title: "PharmaForm AI PRO",
+        subtitle: "Drug Formulation, Financial & Logistics System",
+        lblForm: "Dosage Form:",
+        lblApi: "Active Ingredient (API):",
+        lblStrat: "Strategy:",
+        lblBatch: "Batch Size (Units):",
+        optTablet: "Tablets", optCapsule: "Capsules", optSyrup: "Syrup",
+        optBal: "Balanced", optCost: "Cost-Wise", optQual: "Quality-Wise",
+        btnRun: "Optimize & Analyze",
+        formulaTitle: "Core Formula Details (Per Unit)",
+        chartTitle: "Ingredient Distribution",
+        batchDetails: "Batch Summary & Logistics",
+        recsTitle: "Recommendations & Quality (IPQC)",
+        costTitle: "Cost Analysis (Economic vs Quality)",
+        th: ["Ingredient", "Role", "Qty", "Perc %", "Cost"],
+        ingNames: ["Active API", "Filler", "Binder", "Others"],
+        roles: ["Active", "Diluent", "Adhesive", "Glidant"],
+        logLabels: ["Total Batch Mass:", "Total Production Cost:", "Storage Space:", "Final Boxes:"],
+        recLabels: ["Packaging:", "Method:", "Quality (IPQC):", "Weight Var:", "Hardness:", "Disintegration:"],
+        btnPdf: "Download Full PDF Report"
     }
 };
 
@@ -32,118 +58,123 @@ let charts = { donut: null, bar: null };
 function setLang(lang) {
     currentLang = lang;
     const html = document.getElementById('mainHtml');
+    const t = i18n[lang];
+    
     html.dir = lang === 'ar' ? 'rtl' : 'ltr';
     html.lang = lang;
-    document.getElementById('txt-formula-title').innerText = i18n[lang].formula_title;
-    document.getElementById('txt-batch-details').innerText = i18n[lang].batch_details;
-    document.getElementById('txt-recs').innerText = i18n[lang].recs;
-    document.getElementById('txt-cost-title').innerText = i18n[lang].cost_title;
-    
-    const head = document.getElementById('table-head');
-    head.innerHTML = i18n[lang].th.map(h => `<th>${h}</th>`).join('');
+
+    // تبديل النصوص في الواجهة
+    document.getElementById('txt-title').innerText = t.title;
+    document.getElementById('txt-subtitle').innerText = t.subtitle;
+    document.getElementById('lbl-form').innerText = t.lblForm;
+    document.getElementById('lbl-api').innerText = t.lblApi;
+    document.getElementById('lbl-strat').innerText = t.lblStrat;
+    document.getElementById('lbl-batch').innerText = t.lblBatch;
+    document.getElementById('opt-tablet').innerText = t.optTablet;
+    document.getElementById('opt-capsule').innerText = t.optCapsule;
+    document.getElementById('opt-syrup').innerText = t.optSyrup;
+    document.getElementById('opt-bal').innerText = t.optBal;
+    document.getElementById('opt-cost').innerText = t.optCost;
+    document.getElementById('opt-qual').innerText = t.optQual;
+    document.getElementById('btn-run').innerText = t.btnRun;
+    document.getElementById('txt-formula-title').innerText = t.formulaTitle;
+    document.getElementById('txt-chart-title').innerText = t.chartTitle;
+    document.getElementById('txt-batch-details').innerText = t.batchDetails;
+    document.getElementById('txt-recs').innerText = t.recsTitle;
+    document.getElementById('txt-cost-compare').innerText = t.costTitle;
+    document.getElementById('btn-pdf').innerText = t.btnPdf;
+
+    // تحديث رؤوس الجدول
+    document.getElementById('table-head').innerHTML = t.th.map(h => `<th>${h}</th>`).join('');
+
+    // إعادة الحساب إذا كانت النتائج معروضة
+    if(document.getElementById('resultsArea').style.display === 'block') calculateAll();
 }
 
 function calculateAll() {
+    const t = i18n[currentLang];
     const apiName = document.getElementById('apiSelect').value;
     const strategy = document.getElementById('strategy').value;
     const form = document.getElementById('dosageForm').value;
     const batchSize = parseInt(document.getElementById('batchSize').value);
     const api = apiDb[apiName];
 
-    // 1. حساب الوزن التلقائي
     let unitW = (form === 'syrup') ? 100 : (api.dose < 100 ? 150 : Math.ceil(api.dose * 1.35 / 10) * 10);
-    
-    // 2. توزيع المكونات
     let rem = unitW - api.dose;
     let f, b, o;
     if(strategy === 'cost') { f = rem*0.85; b = rem*0.1; o = rem*0.05; }
     else if(strategy === 'quality') { f = rem*0.6; b = rem*0.25; o = rem*0.15; }
     else { f = rem*0.75; b = rem*0.15; o = rem*0.1; }
 
-    const ingredients = [
-        { name: apiName, role: "API", qty: api.dose, perc: (api.dose/unitW)*100, cost: (api.dose * api.cost / 1000000) },
-        { name: "Filler", role: "Diluent", qty: f, perc: (f/unitW)*100, cost: (f * excipientPrices.filler / 1000000) },
-        { name: "Binder", role: "Adhesive", qty: b, perc: (b/unitW)*100, cost: (b * excipientPrices.binder / 1000000) },
-        { name: "Others", role: "Glidant", qty: o, perc: (o/unitW)*100, cost: (o * excipientPrices.other / 1000000) }
+    const ings = [
+        { name: apiName, role: t.roles[0], qty: api.dose, perc: (api.dose/unitW)*100, cost: (api.dose * api.cost / 1000000) },
+        { name: t.ingNames[1], role: t.roles[1], qty: f, perc: (f/unitW)*100, cost: (f * 6 / 1000000) },
+        { name: t.ingNames[2], role: t.roles[2], qty: b, perc: (b/unitW)*100, cost: (b * 28 / 1000000) },
+        { name: t.ingNames[3], role: t.roles[3], qty: o, perc: (o/unitW)*100, cost: (o * 18 / 1000000) }
     ];
 
-    // 3. العرض
     document.getElementById('resultsArea').style.display = 'block';
     
-    // جدول التركيبة
-    document.getElementById('formulaBody').innerHTML = ingredients.map(ing => `
+    // جدول التركيبة مترجم
+    document.getElementById('formulaBody').innerHTML = ings.map(ing => `
         <tr><td>${ing.name}</td><td>${ing.role}</td><td>${ing.qty.toFixed(1)} mg</td><td>${ing.perc.toFixed(1)}%</td><td>$${ing.cost.toFixed(4)}</td></tr>
     `).join('');
 
-    // ملخص التشغيلة
+    // لوجستيات مترجمة
     const totalMass = (unitW * batchSize / 1000000).toFixed(2);
-    const unitCostTotal = ingredients.reduce((s, i) => s + i.cost, 0);
-    const totalCost = (unitCostTotal * batchSize).toFixed(2);
+    const unitCostTotal = ings.reduce((s, i) => s + i.cost, 0);
     const area = (totalMass / (api.dens * 400)).toFixed(2);
 
     document.getElementById('batchSummaryBody').innerHTML = `
-        <tr><td>${i18n[currentLang].log_labels[0]}</td><td>${totalMass} kg</td></tr>
-        <tr><td>${i18n[currentLang].log_labels[1]}</td><td>$${totalCost}</td></tr>
-        <tr><td>${i18n[currentLang].log_labels[2]}</td><td>${area} m²</td></tr>
-        <tr><td>${i18n[currentLang].log_labels[3]}</td><td>${Math.ceil(batchSize/30)} Boxes</td></tr>
+        <tr><td>${t.logLabels[0]}</td><td>${totalMass} kg</td></tr>
+        <tr><td>${t.logLabels[1]}</td><td>$${(unitCostTotal * batchSize).toFixed(2)}</td></tr>
+        <tr><td>${t.logLabels[2]}</td><td>${area} m²</td></tr>
+        <tr><td>${t.logLabels[3]}</td><td>${Math.ceil(batchSize/30)}</td></tr>
     `;
 
-    // الرسوم البيانية
-    drawDonut(api.dose, f, b, o);
-    drawComparison(unitCostTotal * batchSize, api, rem, batchSize);
-    renderRecs(api, form, unitW);
+    renderRecs(api, form, unitW, t);
+    drawDonut(api.dose, f, b, o, t.ingNames);
+    drawComparison(unitCostTotal * batchSize, api, rem, batchSize, t);
 }
 
-function drawDonut(a, f, b, o) {
+function renderRecs(api, form, unitW, t) {
+    const limit = unitW > 324 ? 5 : 7.5;
+    const method = unitW > 500 ? (currentLang === 'ar' ? 'التحبيب الرطب' : 'Wet Granulation') : (currentLang === 'ar' ? 'الكبس المباشر' : 'Direct Compression');
+    document.getElementById('recList').innerHTML = `
+        <li><b>${t.recLabels[0]}</b> ${api.moist ? 'Alu-Alu' : 'PVC/PVDC'}</li>
+        <li><b>${t.recLabels[1]}</b> ${method}</li>
+        <hr><b>${t.recLabels[2]}</b>
+        <li>${t.recLabels[3]} ±${limit}% (${(unitW*(1-limit/100)).toFixed(1)}-${(unitW*(1+limit/100)).toFixed(1)} mg)</li>
+        <li>${t.recLabels[4]} 8-14 kg | ${t.recLabels[5]} < 15 min</li>
+    `;
+}
+
+function drawDonut(a, f, b, o, labels) {
     const ctx = document.getElementById('formulaChart').getContext('2d');
     if(charts.donut) charts.donut.destroy();
     charts.donut = new Chart(ctx, {
         type: 'doughnut',
         data: {
-            labels: ['API', 'Filler', 'Binder', 'Others'],
+            labels: labels,
             datasets: [{ data: [a, f, b, o], backgroundColor: ['#1a5276', '#3498db', '#f1c40f', '#e74c3c'] }]
-        }
+        },
+        options: { plugins: { legend: { position: 'bottom', rtl: currentLang === 'ar' } } }
     });
 }
 
-function drawComparison(currentCost, api, rem, batch) {
+function drawComparison(currentCost, api, rem, batch, t) {
+    const apiC = (api.dose * api.cost / 1000000) * batch;
     const ecoEx = ((rem*0.85*6) + (rem*0.1*28) + (rem*0.05*18)) / 1000000 * batch;
     const qualEx = ((rem*0.6*6) + (rem*0.25*28) + (rem*0.15*18)) / 1000000 * batch;
-    const apiC = (api.dose * api.cost / 1000000) * batch;
 
     const ctx = document.getElementById('costComparisonChart').getContext('2d');
     if(charts.bar) charts.bar.destroy();
     charts.bar = new Chart(ctx, {
         type: 'bar',
         data: {
-            labels: currentLang === 'ar' ? ['إقتصادي', 'عالي الجودة'] : ['Economic', 'Quality'],
-            datasets: [{
-                label: 'Total Cost $',
-                data: [apiC + ecoEx, apiC + qualEx],
-                backgroundColor: ['#27ae60', '#1a5276']
-            }]
+            labels: [t.optCost, t.optQual],
+            datasets: [{ label: '$', data: [apiC + ecoEx, apiC + qualEx], backgroundColor: ['#27ae60', '#1a5276'] }]
         },
         options: { indexAxis: 'y', maintainAspectRatio: false }
     });
-}
-
-function renderRecs(api, form, unitW) {
-    const list = document.getElementById('recList');
-    const limit = unitW > 324 ? 5 : 7.5;
-    list.innerHTML = `
-        <li><b>Packing:</b> ${api.moist ? 'Alu-Alu Blister' : 'PVC Blister'}</li>
-        <li><b>Method:</b> ${unitW > 500 ? 'Wet Granulation' : 'Direct Compression'}</li>
-        <hr>
-        <b>IPQC Standards:</b>
-        <li>Weight Var: ±${limit}% (${(unitW*(1-limit/100)).toFixed(1)}-${(unitW*(1+limit/100)).toFixed(1)} mg)</li>
-        <li>Hardness: 8-14 kg | Disintegration: < 15 min</li>
-    `;
-}
-
-function generatePDF() {
-    const { jsPDF } = window.jspdf;
-    const doc = new jsPDF();
-    doc.text("PharmaForm AI Production Report", 20, 20);
-    doc.autoTable({ html: '#formulaTable', startY: 30 });
-    doc.save("Production_Report.pdf");
 }
