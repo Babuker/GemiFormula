@@ -1,79 +1,85 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="mainHtml">
+<html lang="en" dir="ltr" id="mainHtml">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PharmaForm AI - Master Pro</title>
+    <title>PharmaForm AI – Formula Engine</title>
     <link rel="stylesheet" href="style.css">
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
 <body>
-    <div class="container">
-        <header>
-            <div class="lang-toggle">
-                <button onclick="toggleLanguage('ar')">العربية</button> | 
-                <button onclick="toggleLanguage('en')">English</button>
-            </div>
-            <h1 id="title">المنظم الصيدلاني الذكي PRO</h1>
-            <p id="subtitle">تصميم الصيغ الدوائية والخدمات اللوجستية</p>
-        </header>
+<div class="container">
 
-        <section class="card input-grid">
-            <div class="field">
-                <label id="lblForm">الشكل الصيدلاني:</label>
-                <select id="dosageForm">
-                    <option value="tablet">أقراص (Tablet)</option>
-                    <option value="capsule">كبسولات (Capsule)</option>
-                    <option value="syrup">شراب (Syrup)</option>
-                </select>
-            </div>
-            <div class="field">
-                <label id="lblApi">المادة الفعالة:</label>
-                <select id="apiSelect">
-                    <option value="Paracetamol">باراسيتامول (Paracetamol)</option>
-                    <option value="Metronidazole">مترونيدازول (Metronidazole)</option>
-                    <option value="Diclofenac">ديكلوفيناك (Diclofenac)</option>
-                    <option value="Ibuprofen">إيبوبروفين (Ibuprofen)</option>
-                </select>
-            </div>
-            <div class="field">
-                <label id="lblStrategy">إستراتيجية التصنيع:</label>
-                <select id="strategy">
-                    <option value="balanced">متوازنة (Balanced)</option>
-                    <option value="cost">اقتصادية (Cost-Wise)</option>
-                    <option value="quality">عالية الجودة (Quality-Wise)</option>
-                </select>
-            </div>
-            <div class="field">
-                <label id="lblBatch">حجم التشغيلة (وحدة):</label>
-                <input type="number" id="batchSize" value="10000">
-            </div>
-            <button onclick="processOptimization()" class="btn-main" id="btnRun">تحسين ومعالجة</button>
-        </section>
+<header>
+    <h1>PharmaForm AI – Formula Engine</h1>
+</header>
 
-        <div id="resultsArea" style="display:none;">
-            <div class="main-results">
-                <div class="card chart-container">
-                    <h3 id="resChart">توزيع المكونات</h3>
-                    <canvas id="formulaChart"></canvas>
-                </div>
-                <div class="card recommendations">
-                    <h3 id="resRec">التوصيات الاحترافية</h3>
-                    <ul id="recList"></ul>
-                </div>
-            </div>
+<section class="card input-grid">
 
-            <div class="card table-container">
-                <h3 id="resLog">النتائج اللوجستية والإنتاجية</h3>
-                <table id="logisticsTable">
-                    <tbody id="logisticsBody"></tbody>
-                </table>
-                <button onclick="exportPDF()" class="btn-pdf" id="btnPdf">تحميل التقرير الفني (PDF)</button>
-            </div>
-        </div>
+    <div class="field">
+        <label>Dosage Form</label>
+        <select id="dosageForm">
+            <option value="tablet">Tablet</option>
+            <option value="capsule">Capsule</option>
+        </select>
     </div>
-    <script src="script.js"></script>
+
+    <div class="field">
+        <label>API</label>
+        <select id="apiSelect">
+            <option value="Paracetamol">Paracetamol</option>
+            <option value="Ibuprofen">Ibuprofen</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label>API Amount / Unit (mg)</label>
+        <input type="number" id="apiDose" value="500">
+    </div>
+
+    <div class="field">
+        <label>Processing Method</label>
+        <select id="processMethod">
+            <option value="dc">Direct Compression</option>
+            <option value="wg">Wet Granulation</option>
+            <option value="dg">Dry Granulation</option>
+        </select>
+    </div>
+
+    <div class="field">
+        <label>Pharmacopoeia Constraint</label>
+        <select id="pharmaStd">
+            <option value="USP">USP</option>
+            <option value="BP">BP</option>
+            <option value="USP_BP">USP + BP</option>
+        </select>
+    </div>
+
+    <button class="btn-main" onclick="runFormulation()">Generate Formula</button>
+
+</section>
+
+<section class="card">
+    <h3>Formulation Details</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Component</th>
+                <th>Quantity (mg)</th>
+                <th>Role</th>
+                <th>Ratio (%)</th>
+                <th>Cost / mg ($)</th>
+            </tr>
+        </thead>
+        <tbody id="formulaTable"></tbody>
+    </table>
+</section>
+
+<section class="card mini-rec">
+    <strong>Notes:</strong>
+    <ul id="recList"></ul>
+</section>
+
+</div>
+
+<script src="script.js"></script>
 </body>
 </html>
