@@ -1,72 +1,95 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" id="mainHtml">
 <head>
     <meta charset="UTF-8">
-    <title>GemiFormula AI PRO</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GemiFormula AI PRO - Ultimate</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
-    
-    <style>
-        /* ستايل مختصر مدمج */
-        :root { --p: #1a5276; --bg: #f4f7f9; }
-        body { font-family: sans-serif; background: var(--bg); padding: 20px; }
-        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        .btn-main { width: 100%; padding: 15px; background: var(--p); color: white; border: none; cursor: pointer; border-radius: 8px; font-weight: bold; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid #eee; padding: 10px; text-align: center; }
-        .chart-container { height: 250px; position: relative; }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-    <div class="card">
-        <h2>المنظم الصيدلاني الذكي PRO</h2>
-        <label>المادة الفعالة:</label>
-        <select id="apiSelect">
-            <option value="Paracetamol">Paracetamol</option>
-            <option value="Diclofenac">Diclofenac Sodium</option>
-        </select>
-        <br><br>
-        <button class="btn-main" onclick="calculateAll()">تحليل الصيغة الآن</button>
+    <div class="container">
+        <header>
+            <div class="lang-toggle">
+                <button onclick="setLang('ar')">العربية</button> | 
+                <button onclick="setLang('en')">English</button>
+            </div>
+            <h1 id="txt-title">المنظم الصيدلاني الذكي PRO</h1>
+            <p id="txt-subtitle">النظام الخبير لتطوير الصيغ وحماية البيانات</p>
+        </header>
+
+        <section class="card input-section">
+            <div class="grid-inputs">
+                <div class="field">
+                    <label id="lbl-form">الشكل الصيدلاني:</label>
+                    <select id="dosageForm">
+                        <option value="tablet">أقراص (Tablets)</option>
+                        <option value="capsule">كبسولات (Capsules)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-api">المادة الفعالة (API):</label>
+                    <select id="apiSelect">
+                        <option value="Paracetamol">Paracetamol</option>
+                        <option value="Metronidazole">Metronidazole</option>
+                        <option value="Diclofenac">Diclofenac Sodium</option>
+                        <option value="Ibuprofen">Ibuprofen</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-strat">إستراتيجية التركيبة:</label>
+                    <select id="strategy">
+                        <option value="balanced">متوازنة (Balanced)</option>
+                        <option value="cost">اقتصادية (Cost-Wise)</option>
+                        <option value="quality">عالية الجودة (Quality-Wise)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-batch">حجم التشغيلة (الوحدات):</label>
+                    <input type="number" id="batchSize" value="10000">
+                </div>
+            </div>
+            <button onclick="calculateAll()" class="btn-main" id="btn-run">تحليل واقتراح التركيبة المثلى</button>
+        </section>
+
+        <div id="resultsArea" style="display:none;">
+            <div class="card efficiency-card">
+                 <div id="efficiencyWrapper"></div>
+            </div>
+
+            <div class="main-results-grid">
+                <div class="card primary-card">
+                    <h3 id="txt-formula-title">تفاصيل التركيبة المختارة</h3>
+                    <table>
+                        <thead><tr id="table-head"></tr></thead>
+                        <tbody id="formulaBody"></tbody>
+                    </table>
+                </div>
+                <div class="card chart-card">
+                    <h3 id="txt-chart-title">توزيع المكونات</h3>
+                    <div class="chart-container">
+                        <canvas id="formulaChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card cost-compare-card">
+                <h3 id="txt-cost-compare">تحليل مقارنة التكاليف</h3>
+                <div class="chart-bar-container">
+                    <canvas id="costComparisonChart"></canvas>
+                </div>
+                <button onclick="generatePDF()" class="btn-pdf" id="btn-pdf">تحميل التقرير المحمي (PDF)</button>
+            </div>
+        </div>
+
+        <footer>
+            <p id="footer-text">&copy; 2026 GemiFormula AI. جميع الحقوق محفوظة قانونياً.</p>
+            <div style="display:none;"><canvas id="barcodeCanvas"></canvas></div>
+        </footer>
     </div>
-
-    <div id="resultsArea" style="display:none;" class="card">
-        <h3>النتائج والتركيبة</h3>
-        <table>
-            <thead><tr><th>المادة</th><th>الكمية (mg)</th></tr></thead>
-            <tbody id="formulaBody"></tbody>
-        </table>
-        <div class="chart-container"><canvas id="formulaChart"></canvas></div>
-        <button style="background:red; color:white; padding:10px; margin-top:10px; width:100%; border:none; border-radius:8px;" onclick="generatePDF()">تحميل PDF المحمي</button>
-    </div>
-
-    <canvas id="barcodeCanvas" style="display:none;"></canvas>
-
-    <script>
-        // سكربت مختصر مدمج للتجربة
-        function calculateAll() {
-            const api = document.getElementById('apiSelect').value;
-            const body = document.getElementById('formulaBody');
-            const data = api === 'Paracetamol' ? [500, 150, 50] : [50, 100, 20];
-            const labels = ['API', 'Filler', 'Binder'];
-            
-            body.innerHTML = labels.map((l, i) => `<tr><td>${l}</td><td>${data[i]}</td></tr>`).join('');
-            document.getElementById('resultsArea').style.display = 'block';
-            
-            new Chart(document.getElementById('formulaChart'), {
-                type: 'doughnut',
-                data: { labels: labels, datasets: [{ data: data, backgroundColor: ['#1a5276', '#3498db', '#f1c40f'] }] }
-            });
-        }
-
-        function generatePDF() {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            doc.text("GemiFormula Secured Report", 10, 10);
-            doc.setTextColor(240); doc.text("WATERMARK", 50, 50, {angle: 45}); // علامة مائية
-            doc.save("Report.pdf");
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
