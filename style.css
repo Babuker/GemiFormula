@@ -1,5 +1,5 @@
 :root { --p: #1a5276; --s: #27ae60; --bg: #f4f7f9; --white: #ffffff; }
-body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
+body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #333; }
 .container { max-width: 1100px; margin: auto; }
 header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid var(--p); padding-bottom: 15px; position: relative; }
 .lang-toggle { position: absolute; top: 0; left: 0; }
@@ -13,19 +13,18 @@ header { text-align: center; margin-bottom: 25px; border-bottom: 3px solid var(-
 .secondary-results-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
 
 .field label { display: block; font-weight: bold; margin-bottom: 5px; color: var(--p); }
-select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; }
+select, input { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; font-size: 1em; }
 
-.btn-main { width: 100%; padding: 15px; background: var(--p); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; }
-.btn-pdf { width: 100%; padding: 12px; background: #c0392b; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; }
+.btn-main { width: 100%; padding: 15px; background: var(--p); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; margin-top: 15px; font-size: 1.1em; }
+.btn-pdf { width: 100%; padding: 12px; background: #c0392b; color: white; border: none; border-radius: 8px; cursor: pointer; margin-top: 15px; font-weight: bold; }
 
 table { width: 100%; border-collapse: collapse; }
 th, td { padding: 12px; border-bottom: 1px solid #eee; text-align: inherit; }
-.summary-table td:last-child { font-weight: bold; color: var(--p); }
+.summary-table td:last-child { font-weight: bold; color: var(--p); text-align: end; }
 
 .chart-container { height: 250px; position: relative; }
 .chart-bar-container { height: 220px; position: relative; }
 
-/* Efficiency UI */
 .progress-bar { background: #eee; border-radius: 10px; height: 14px; width: 100%; margin: 10px 0; overflow: hidden; }
 .progress-fill { height: 100%; transition: width 1s ease; }
 
