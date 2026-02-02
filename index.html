@@ -1,114 +1,81 @@
 <!DOCTYPE html>
-<html lang="en" id="mainHtml">
+<html lang="ar" dir="rtl" id="mainHtml">
 <head>
     <meta charset="UTF-8">
-    <title>GemiFormula – Smart Formulation Engine</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+    <title>PharmaForm AI - Master Pro</title>
     <link rel="stylesheet" href="style.css">
-
-    <!-- Libraries -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </head>
-
 <body>
+    <div class="container">
+        <header>
+            <div class="lang-toggle">
+                <button onclick="setLang('ar')">العربية</button> | 
+                <button onclick="setLang('en')">English</button>
+            </div>
+            <h1 id="txt-title">المنظم الصيدلاني الذكي PRO</h1>
+            <p id="txt-subtitle">تصميم الصيغ الدوائية واللوجستيات المتقدمة</p>
+        </header>
 
-<div class="container">
+        <section class="card input-section">
+            <div class="grid-inputs">
+                <div class="field">
+                    <label id="lbl-form">الشكل الصيدلاني:</label>
+                    <select id="dosageForm" onchange="updateFormFields()">
+                        <option value="tablet">أقراص (Tablet)</option>
+                        <option value="capsule">كبسولات (Capsule)</option>
+                        <option value="syrup">شراب (Syrup)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-api">المادة الفعالة (API):</label>
+                    <select id="apiSelect">
+                        <option value="Paracetamol">Paracetamol</option>
+                        <option value="Metronidazole">Metronidazole</option>
+                        <option value="Diclofenac">Diclofenac Sodium</option>
+                        <option value="Ibuprofen">Ibuprofen</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-strat">إستراتيجية التركيبة:</label>
+                    <select id="strategy">
+                        <option value="balanced">متوازنة (Balanced)</option>
+                        <option value="cost">اقتصادية (Cost-Wise)</option>
+                        <option value="quality">عالية الجودة (Quality-Wise)</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label id="lbl-batch">حجم التشغيلة (Batch):</label>
+                    <input type="number" id="batchSize" value="10000">
+                </div>
+            </div>
+            <button onclick="calculateAll()" class="btn-main" id="btn-run">تحليل وتحسين الصيغة</button>
+        </section>
 
-<header>
-    <h1>GemiFormula – Smart Formulation Engine</h1>
-</header>
+        <div id="resultsArea" style="display:none;">
+            <div class="results-grid">
+                <div class="card">
+                    <h3 id="txt-chart">توزيع المكونات</h3>
+                    <canvas id="formulaChart"></canvas>
+                </div>
+                <div class="card">
+                    <h3 id="txt-recs">التوصيات والبيانات الفنية</h3>
+                    <ul id="recList" class="rec-list"></ul>
+                </div>
+            </div>
 
-<!-- INPUTS -->
-<section class="card input-grid">
-
-    <div class="field">
-        <label>Dosage Form</label>
-        <select id="dosageForm">
-            <option value="tablet">Tablet</option>
-            <option value="capsule">Capsule</option>
-        </select>
-    </div>
-
-    <div class="field">
-        <label>API</label>
-        <select id="apiSelect">
-            <option value="Paracetamol">Paracetamol</option>
-            <option value="Ibuprofen">Ibuprofen</option>
-        </select>
-    </div>
-
-    <div class="field">
-        <label>API Amount per Unit (mg)</label>
-        <input type="number" id="apiDose" value="500">
-    </div>
-
-    <div class="field">
-        <label>Formulation Strategy</label>
-        <select id="strategy">
-            <option value="cost">Cost-wise</option>
-            <option value="balanced" selected>Balanced</option>
-            <option value="quality">Quality-wise</option>
-        </select>
-    </div>
-
-    <div class="field">
-        <label>Batch Size (units)</label>
-        <input type="number" id="batchSize" value="10000">
-    </div>
-
-    <button class="btn-main" onclick="runFormulation()">Generate Results</button>
-
-</section>
-
-<!-- RESULTS -->
-<div id="resultsArea" style="display:none;">
-
-    <!-- 1️⃣ FORMULA TABLE + PIE -->
-    <section class="card">
-        <h3>Formulation Composition</h3>
-
-        <div class="formula-layout">
-
-            <table>
-                <thead>
-                    <tr>
-                        <th>Component</th>
-                        <th>Quantity (mg)</th>
-                        <th>Role</th>
-                        <th>Ratio (%)</th>
-                    </tr>
-                </thead>
-                <tbody id="formulaTable"></tbody>
-            </table>
-
-            <canvas id="formulaChart"></canvas>
-
+            <div class="card">
+                <h3 id="txt-logistics">النتائج اللوجستية والإنتاجية</h3>
+                <table id="logisticsTable">
+                    <tbody id="logisticsBody"></tbody>
+                </table>
+                <button onclick="generatePDF()" class="btn-pdf" id="btn-pdf">تحميل التقرير الفني (PDF)</button>
+            </div>
         </div>
-    </section>
-
-    <!-- 2️⃣ ONE-LINE BATCH -->
-    <section class="card compact-line">
-        <strong>Batch:</strong>
-        <span id="batchLine"></span>
-    </section>
-
-    <!-- 3️⃣ ONE-LINE RECOMMENDATION -->
-    <section class="card compact-line">
-        <strong>Recommendation:</strong>
-        <span id="recLine"></span>
-    </section>
-
-    <!-- 4️⃣ PDF -->
-    <section class="card">
-        <button class="btn-pdf" onclick="exportPDF()">Download Results (PDF)</button>
-    </section>
-
-</div>
-
-</div>
-
-<script src="script.js"></script>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
